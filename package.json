@@ -19,14 +19,10 @@
     "eslint-plugin-standard": "^4.0.1"
   },
   "dependencies": {
-    "@babel/preset-env": "^7.9.5",
-    "@babel/preset-react": "^7.9.4",
-    "babel-jest": "^25.3.0",
     "concurrently": "^5.1.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "jest": "^25.3.0",
-    "node-fetch": "^2.6.0",
-    "react-test-renderer": "^16.13.1"
+    "exprss": "0.0.1-security",
+    "node-fetch": "^2.6.0"
   }
 }
