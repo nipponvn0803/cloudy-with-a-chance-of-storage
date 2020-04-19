@@ -17,6 +17,7 @@ import {
   TableHead,
   TableRow,
   TableSortLabel,
+  Typography,
   useMediaQuery
 } from '@material-ui/core'
 import SimpleDialog from './Dialog'
@@ -41,6 +42,9 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     justifyContent: 'center',
     marginTop: 20
+  },
+  tableHeader: {
+    fontWeight: 'bold'
   }
 }))
 
@@ -49,7 +53,7 @@ const ITEM_PADDING_TOP = 8
 const MenuProps = {
   PaperProps: {
     style: {
-      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      maxHeight: ITEM_HEIGHT * 10 + ITEM_PADDING_TOP,
       width: 250
     }
   }
@@ -76,8 +80,8 @@ function App () {
   // distance sorting
   const [selectedSort, setSelectedSort] = useState('Nearest')
   const [userLocation, setUserLocation] = useState({
-    geo_latitude: null,
-    geo_longitude: null
+    geo_latitude: 0,
+    geo_longitude: 0
   })
   const [locationError, setLocationError] = useState(null)
 
@@ -123,12 +127,31 @@ function App () {
   }
 
   const handleChange = (event, param) => {
+    console.log(event.target.value)
+
     switch (param) {
       case 0:
-        setSelectedProviderName(event.target.value)
+
+        if (event.target.value.includes('Toggle All')) {
+          if (selectedProviderName.length === initialProviders.length) {
+            setSelectedProviderName([])
+          } else {
+            setSelectedProviderName([...initialProviders])
+          }
+        } else {
+          setSelectedProviderName(event.target.value)
+        }
         break
       case 1:
-        setSelectedRegions(event.target.value)
+        if (event.target.value.includes('Toggle All')) {
+          if (selectedRegions.length === initialRegions.length) {
+            setSelectedRegions([])
+          } else {
+            setSelectedRegions([...initialRegions])
+          }
+        } else {
+          setSelectedRegions(event.target.value)
+        }
         break
       case 2:
         setSelectedSort(event.target.value)
@@ -157,7 +180,7 @@ function App () {
     ) {
       // fetch data from server.js
       fetch(
-        `http://localhost:3001/api/getData?lat=${userLocation.geo_latitude}&long=${userLocation.geo_longitude}`
+        `/api/getData?lat=${userLocation.geo_latitude}&long=${userLocation.geo_longitude}`
       )
         .then(res => res.json())
         .then(
@@ -175,45 +198,18 @@ function App () {
 
             // initiate providers
             setInitialProviders([
-              ...new Set(result.data.map(cloud => cloud.provider))
+              ...new Set(result.data.map(cloud => cloud.provider).sort())
             ])
             setSelectedProviderName([
-              ...new Set(result.data.map(cloud => cloud.provider))
+              ...new Set(result.data.map(cloud => cloud.provider).sort())
             ])
 
             // initiate regions
             setInitialRegions([
-              ...new Set(result.data.map(cloud => cloud.region))
+              ...new Set(result.data.map(cloud => cloud.region).sort())
             ])
             setSelectedRegions([
-              ...new Set(result.data.map(cloud => cloud.region))
-            ])
-          },
-
-          error => {
-            setIsLoaded(true)
-            setError(error)
-          }
-        )
-    } else {
-      // if user does not allowed geolocation
-      fetch('http://localhost:3001/api/getData?lat=0&long=0')
-        .then(res => res.json())
-        .then(
-          result => {
-            setIsLoaded(true)
-            setInitialData(result.data)
-            setData(
-              result.data.sort(function (a, b) {
-                return a.distance - b.distance
-              })
-            )
-
-            setInitialProviders([
-              ...new Set(result.data.map(cloud => cloud.provider))
-            ])
-            setSelectedProviderName([
-              ...new Set(result.data.map(cloud => cloud.provider))
+              ...new Set(result.data.map(cloud => cloud.region).sort())
             ])
           },
 
@@ -251,6 +247,9 @@ function App () {
   } else if (!isLoaded) {
     return (
       <div style={{ padding: mobile ? '5px 10px' : '10px 20px' }}>
+        <Typography variant="h3" gutterBottom>
+          Cloud servers selection
+        </Typography>
         <div style={{ display: 'flex', flexDirection: mobile ? 'column' : 'row', justifyContent: 'space-between' }}>
           <FormControl className={mobile ? classes.formControlMobile : classes.formControl}>
             <InputLabel>Provider</InputLabel>
@@ -289,11 +288,11 @@ function App () {
           <Table className={classes.table} aria-label="simple table">
             <TableHead>
               <TableRow>
-                <TableCell>Cloud&nbsp;name</TableCell>
-                <TableCell align="center">Provider</TableCell>
-                <TableCell align="center">Location</TableCell>
-                <TableCell align="center">Region</TableCell>
-                <TableCell align="center">
+                <TableCell className={classes.tableHeader}>Cloud&nbsp;name</TableCell>
+                <TableCell className={classes.tableHeader} align="center">Provider</TableCell>
+                <TableCell className={classes.tableHeader} align="center">Location</TableCell>
+                <TableCell className={classes.tableHeader} align="center">Region</TableCell>
+                <TableCell className={classes.tableHeader} align="center">
                   <TableSortLabel
                     active={true}
                     direction={selectedSort === 'Nearest' ? 'asc' : 'desc'}
@@ -313,6 +312,9 @@ function App () {
   } else {
     return (
       <div style={{ padding: mobile ? '5px 10px' : '10px 20px' }}>
+        <Typography variant="h3" gutterBottom>
+          Cloud servers selection
+        </Typography>
         <div style={{ display: 'flex', flexDirection: mobile ? 'column' : 'row', justifyContent: 'space-between' }}>
           <FormControl className={mobile ? classes.formControlMobile : classes.formControl}>
             <InputLabel>Provider</InputLabel>
@@ -324,6 +326,10 @@ function App () {
               renderValue={selected => selected.join(', ')}
               MenuProps={MenuProps}
             >
+              <MenuItem value="Toggle All">
+                <Checkbox checked={selectedProviderName.length === initialProviders.length} />
+                <ListItemText primary={selectedProviderName.length === initialProviders.length ? 'Select none' : 'Select all'} />
+              </MenuItem>
               {initialProviders.map(name => (
                 <MenuItem key={name} value={name}>
                   <Checkbox checked={selectedProviderName.indexOf(name) > -1} />
@@ -343,6 +349,10 @@ function App () {
               renderValue={selected => selected.join(', ')}
               MenuProps={MenuProps}
             >
+              <MenuItem value="Toggle All">
+                <Checkbox checked={selectedRegions.length === initialRegions.length} />
+                <ListItemText primary={selectedRegions.length === initialRegions.length ? 'Select none' : 'Select all'} />
+              </MenuItem>
               {initialRegions.map(name => (
                 <MenuItem key={name} value={name}>
                   <Checkbox checked={selectedRegions.indexOf(name) > -1} />
@@ -365,11 +375,11 @@ function App () {
           <Table className={classes.table} aria-label="simple table">
             <TableHead>
               <TableRow>
-                <TableCell>Cloud&nbsp;name</TableCell>
-                <TableCell align="center">Provider</TableCell>
-                <TableCell align="center">Location</TableCell>
-                <TableCell align="center">Region</TableCell>
-                <TableCell align="center">
+                <TableCell className={classes.tableHeader}>Cloud&nbsp;name</TableCell>
+                <TableCell className={classes.tableHeader} align="center">Provider</TableCell>
+                <TableCell className={classes.tableHeader} align="center">Location</TableCell>
+                <TableCell className={classes.tableHeader} align="center">Region</TableCell>
+                <TableCell className={classes.tableHeader} align="center">
                   <TableSortLabel
                     active={true}
                     direction={selectedSort === 'Nearest' ? 'asc' : 'desc'}
@@ -385,6 +395,7 @@ function App () {
                 <TableRow
                   data-testid="cloud-row"
                   key={`${row.cloudName} ${row.provider} ${row.region}`}
+                  hover
                   onClick={() => handleClickOpen({
                     cloudName: row.cloudName,
                     provider: row.provider,
@@ -401,7 +412,9 @@ function App () {
                     {row.region}
                   </TableCell>
                   <TableCell align="center">
-                    {locationError || row.distance}
+                    {locationError ||
+                    (userLocation.geo_latitude === 0 && userLocation.geo_longitude === 0)
+                      ? 'Cannot retrieve your location' : row.distance}
                   </TableCell>
                 </TableRow>
               ))}
