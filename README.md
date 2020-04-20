@@ -26,6 +26,8 @@ cd ..
 npm start
 ```
 
+The client will be displayed at port 3000 while the server will be listening at port 3001.
+
 ## Files structure and implementation
 For the server implementation, I used express and node-fetch to fetch data.
 After fetching, the data is also transformed here before the client side receive it.
