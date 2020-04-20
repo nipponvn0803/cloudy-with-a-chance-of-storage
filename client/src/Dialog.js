@@ -47,7 +47,7 @@ export default function SimpleDialog (props) {
           </TableHead>
           <TableBody>
             <TableRow >
-              <TableCell component="th" scope="row">
+              <TableCell data-testid="cloud-dialog-name" component="th" scope="row">
                 {selectedValue.cloudName}
               </TableCell>
               <TableCell align="center">{selectedValue.provider}</TableCell>
@@ -61,7 +61,7 @@ export default function SimpleDialog (props) {
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={handleClose} color="primary">
+        <Button data-testid="close-dialog-button" onClick={handleClose} color="primary">
             Close
         </Button>
       </DialogActions>

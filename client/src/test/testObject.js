@@ -1,5 +1,5 @@
 const testObject = {
-  clouds: [
+  data: [
     {
       cloud_description: 'Africa, South Africa - Azure: South Africa North',
       cloud_name: 'azure-south-africa-north',
@@ -703,4 +703,70 @@ const testObject = {
   ]
 }
 
-export default testObject
+function getDistanceFromLatLonInKm (lat1, lon1, lat2, lon2) {
+  var R = 6371 // Radius of the earth in km
+  var dLat = deg2rad(lat2 - lat1) // deg2rad below
+  var dLon = deg2rad(lon2 - lon1)
+  var a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) *
+      Math.cos(deg2rad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2)
+
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  var d = R * c // Distance in km
+  return d
+}
+
+function deg2rad (deg) {
+  return deg * (Math.PI / 180)
+}
+
+function formatData (object) {
+  const formattedData = []
+  object.data.forEach((cloud) => {
+    // cut provider name between the first hypen (-) and colon (:)
+    const provider = cloud.cloud_description.substring(
+      cloud.cloud_description.indexOf('-') + 2,
+      cloud.cloud_description.indexOf(':')
+    )
+
+    //   cut the location before the first hyphen (-)
+    const location = cloud.cloud_description.substring(
+      0,
+      cloud.cloud_description.indexOf('-') - 1
+    )
+
+    const distance =
+    //   get distance in km
+    //   round distance to 2 decimal points
+            Math.round(
+              getDistanceFromLatLonInKm(
+                65,
+                25,
+                cloud.geo_latitude,
+                cloud.geo_longitude
+              ) * 100
+            ) / 100
+
+    formattedData.push({
+      cloudName: cloud.cloud_name,
+      provider: provider,
+      location: location,
+      region: cloud.geo_region
+      // uppercase the first letter of each word in region
+        .split(' ')
+        .map(
+          string =>
+            string.charAt(0).toUpperCase() + string.substring(1)
+        )
+        .join(' '),
+      distance: distance
+    })
+  })
+
+  return { data: formattedData }
+}
+
+export default formatData(testObject)

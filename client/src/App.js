@@ -59,6 +59,12 @@ const MenuProps = {
   }
 }
 
+export function fetchData () {
+  fetch(
+    '/api/getData?lat=0&long=0'
+  )
+}
+
 function App () {
   const classes = useStyles()
   const mobile = useMediaQuery('(max-width:800px)')
@@ -127,11 +133,8 @@ function App () {
   }
 
   const handleChange = (event, param) => {
-    console.log(event.target.value)
-
     switch (param) {
       case 0:
-
         if (event.target.value.includes('Toggle All')) {
           if (selectedProviderName.length === initialProviders.length) {
             setSelectedProviderName([])
@@ -166,12 +169,51 @@ function App () {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(saveUserLocation, showError)
     } else {
-      // in case the browser does not support geolocation,
-      // set the coords to (0,0)
-      saveUserLocation({ coords: { latitude: 0, longitude: 0 } })
       alert('Geolocation is not supported by this browser.')
     }
   }, [])
+
+  async function fetchData () {
+    fetch(
+      `/api/getData?lat=${userLocation.geo_latitude}&long=${userLocation.geo_longitude}`
+    )
+      .then(res => res.json())
+      .then(
+        result => {
+          // finish loading
+          setIsLoaded(true)
+
+          // initiate data
+          setInitialData(result.data)
+          setData(
+            result.data.sort(function (a, b) {
+              return a.distance - b.distance
+            })
+          )
+
+          // initiate providers
+          setInitialProviders([
+            ...new Set(result.data.map(cloud => cloud.provider).sort())
+          ])
+          setSelectedProviderName([
+            ...new Set(result.data.map(cloud => cloud.provider).sort())
+          ])
+
+          // initiate regions
+          setInitialRegions([
+            ...new Set(result.data.map(cloud => cloud.region).sort())
+          ])
+          setSelectedRegions([
+            ...new Set(result.data.map(cloud => cloud.region).sort())
+          ])
+        },
+
+        error => {
+          setIsLoaded(true)
+          setError(error)
+        }
+      )
+  }
 
   useEffect(() => {
     if (
@@ -179,45 +221,7 @@ function App () {
       userLocation.geo_longitude !== null
     ) {
       // fetch data from server.js
-      fetch(
-        `/api/getData?lat=${userLocation.geo_latitude}&long=${userLocation.geo_longitude}`
-      )
-        .then(res => res.json())
-        .then(
-          result => {
-            // finish loading
-            setIsLoaded(true)
-
-            // initiate data
-            setInitialData(result.data)
-            setData(
-              result.data.sort(function (a, b) {
-                return a.distance - b.distance
-              })
-            )
-
-            // initiate providers
-            setInitialProviders([
-              ...new Set(result.data.map(cloud => cloud.provider).sort())
-            ])
-            setSelectedProviderName([
-              ...new Set(result.data.map(cloud => cloud.provider).sort())
-            ])
-
-            // initiate regions
-            setInitialRegions([
-              ...new Set(result.data.map(cloud => cloud.region).sort())
-            ])
-            setSelectedRegions([
-              ...new Set(result.data.map(cloud => cloud.region).sort())
-            ])
-          },
-
-          error => {
-            setIsLoaded(true)
-            setError(error)
-          }
-        )
+      fetchData()
     }
   }, [userLocation])
 
@@ -319,6 +323,9 @@ function App () {
           <FormControl className={mobile ? classes.formControlMobile : classes.formControl}>
             <InputLabel>Provider</InputLabel>
             <Select
+              inputProps={
+                { 'data-testid': 'provider-select' }
+              }
               multiple
               value={selectedProviderName}
               onChange={e => handleChange(e, 0)}
@@ -332,7 +339,7 @@ function App () {
               </MenuItem>
               {initialProviders.map(name => (
                 <MenuItem key={name} value={name}>
-                  <Checkbox checked={selectedProviderName.indexOf(name) > -1} />
+                  <Checkbox data-testid={`${name}-checkbox`} checked={selectedProviderName.indexOf(name) > -1} />
                   <ListItemText primary={name} />
                 </MenuItem>
               ))}
@@ -342,6 +349,9 @@ function App () {
           <FormControl className={mobile ? classes.formControlMobile : classes.formControl}>
             <InputLabel>Regions</InputLabel>
             <Select
+              inputProps={
+                { 'data-testid': 'region-select' }
+              }
               multiple
               value={selectedRegions}
               onChange={e => handleChange(e, 1)}
@@ -381,6 +391,7 @@ function App () {
                 <TableCell className={classes.tableHeader} align="center">Region</TableCell>
                 <TableCell className={classes.tableHeader} align="center">
                   <TableSortLabel
+                    data-testid="sort-button"
                     active={true}
                     direction={selectedSort === 'Nearest' ? 'asc' : 'desc'}
                     onClick={() => setSelectedSort(selectedSort === 'Nearest' ? 'Farthest' : 'Nearest')}
@@ -396,14 +407,16 @@ function App () {
                   data-testid="cloud-row"
                   key={`${row.cloudName} ${row.provider} ${row.region}`}
                   hover
-                  onClick={() => handleClickOpen({
-                    cloudName: row.cloudName,
-                    provider: row.provider,
-                    location: row.location,
-                    region: row.region
-                  })}
+                  onClick={() => {
+                    handleClickOpen({
+                      cloudName: row.cloudName,
+                      provider: row.provider,
+                      location: row.location,
+                      region: row.region
+                    })
+                  }}
                 >
-                  <TableCell component="th" scope="row">
+                  <TableCell data-testid='cloud-name-cell' component="th" scope="row">
                     {row.cloudName}
                   </TableCell>
                   <TableCell align="center">{row.provider}</TableCell>
