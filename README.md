@@ -42,8 +42,6 @@ Across the project, I used ESLint as well as prettier to enforce code style and 
 The project uses Jest and react-testing-library. I make mostly unit tests to test functions.
 You can find the test file `App.test.js` inside the `client/src/test` folder
 
-One test is currently not working as expected. Given more time I would like to investigate the reason behind it.
-
 To perform the tests, run command `jest` inside the `client` folder.
 
 ## Related hobby project
