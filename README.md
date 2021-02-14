@@ -43,9 +43,3 @@ The project uses Jest and react-testing-library. I make mostly unit tests to tes
 You can find the test file `App.test.js` inside the `client/src/test` folder
 
 To perform the tests, run command `jest` inside the `client` folder.
-
-## Related hobby project
-Previously, I have worked on a similar application where user can create, read, update and delete entries from an existing database.
-The application has the same structure as this project.
-
-[Here](https://github.com/nipponvn0803/punintentionally) is the link to the project for you to check out if you are interested.
