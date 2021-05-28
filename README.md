@@ -1,4 +1,7 @@
 # Cloud server selection
+This application fetchs a list of available cloud servers from an API and calculate the physical distance to the users if location access is allowed.
+
+Users can also filter servers based on providers as well as regions.
 
 ## Deployment online and locally
 ### Live deployment
